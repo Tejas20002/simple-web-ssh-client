@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web SSH Client</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.2.1/css/xterm.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.2.1/lib/xterm.min.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.7.0/lib/xterm-addon-fit.min.js"></script>
+    <style>
+      #terminal, .terminal {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+        }
+
+        #terminal .xterm-rows{
+            height: 100% !important;
+            display : grid !important;
+        }
+
+        #terminal .xterm-screen{
+            width:100% !important;
+            height:100% !important;
+        }
+
+        #terminal .xterm-viewport{
+            height:100% !important;
+        }
+
+        #terminal .terminal .xterm .xterm-dom-renderer-owner-1{
+            height:100% !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="terminal"></div>
+    <script>
+        const term = new Terminal();
+        const container = document.getElementById('terminal');
+        term.open(container);
+        const socket = new WebSocket('ws://localhost:8000');
+        
+        socket.addEventListener('open', () => {
+            term.write('\r\nConnected to SSH server.\r\n');
+            term.onData(data => {
+                socket.send(data);
+            });
+        });
+
+        socket.addEventListener('message', event => {
+            term.write(event.data);
+        });
+
+        socket.addEventListener('close', () => {
+            term.write('\r\nConnection closed.\r\n');
+        });
+
+        socket.addEventListener('error', error => {
+            console.error('WebSocket error:', error);
+        });
+    </script>
+</body>
+</html>
